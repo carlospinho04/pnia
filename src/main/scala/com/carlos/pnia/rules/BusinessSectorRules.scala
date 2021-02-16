@@ -22,7 +22,6 @@ object BusinessSectorRules {
 
     override def get(phoneNumber: PhoneNumber): F[BusinessSector] = {
       val url = uri"https://challenge-business-sector-api.meza.talkdeskstg.com/".withPath(s"sector/${phoneNumber.number}")
-      println(url)
       c.expect[BusinessSector](GET(url)).adaptError { case error =>
         BusinessSectorError(error.getMessage)
       } // Prevent Client Json Decoding Failure Leaking
