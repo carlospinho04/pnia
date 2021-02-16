@@ -4,6 +4,7 @@ import cats.effect.{ConcurrentEffect, Timer}
 import cats.implicits._
 import com.carlos.pnia.controllers.{Aggregator, HelloWorld, HttpErrorHandler}
 import com.carlos.pnia.rules.{BusinessSectorRules, PhoneNumberValidatorRules}
+import com.carlos.pnia.services.AggregatorServices
 import fs2.Stream
 import org.http4s.HttpRoutes
 import org.http4s.client.blaze.BlazeClientBuilder
@@ -19,12 +20,13 @@ object PniaServer {
     for {
       client <- BlazeClientBuilder[F](global).stream
       helloWorldAlg = HelloWorld.impl[F]
+      //Components initializing
       phoneNumberValidatorRulesAlg = PhoneNumberValidatorRules.impl[F]
       businessSectorRulesAlg = BusinessSectorRules.impl[F](client)
-      aggregatorAlg = Aggregator.impl[F](businessSectorRulesAlg)
+      aggregatorServicesAlg = AggregatorServices.impl[F](businessSectorRulesAlg, phoneNumberValidatorRulesAlg)
+      aggregatorAlg = Aggregator.impl[F](aggregatorServicesAlg)
 
-
-      routes: HttpRoutes[F] = PniaRoutes.helloWorldRoutes[F](helloWorldAlg) <+> PniaRoutes.aggregatorRoutes[F](aggregatorAlg, phoneNumberValidatorRulesAlg)
+      routes: HttpRoutes[F] = PniaRoutes.helloWorldRoutes[F](helloWorldAlg) <+> PniaRoutes.aggregatorRoutes[F](aggregatorAlg)
       routesWithErrorHandler = new HttpErrorHandler().handle(routes)
       httpApp = routesWithErrorHandler.orNotFound
 

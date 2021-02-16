@@ -18,10 +18,10 @@ class HttpErrorHandler[F[_] : Sync, E <: Exception] extends Http4sDsl[F] with Ci
   def handle(routes: HttpRoutes[F]): HttpRoutes[F] =
     Kleisli { req: Request[F] =>
       OptionT {
-        routes.run(req).value.handleErrorWith {
+        routes.run(req).value .handleErrorWith {
           case e: domain.Error =>
             handler(e).map(Option(_))
-          case _ => InternalServerError("Change me").map(Option(_))
+          case _ => InternalServerError("Unexpected error occurred").map(Option(_))
         }
       }
     }

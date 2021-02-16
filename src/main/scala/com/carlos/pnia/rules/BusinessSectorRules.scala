@@ -1,6 +1,6 @@
 package com.carlos.pnia.rules
 
-import cats.effect.Sync
+import cats.effect.Effect
 import cats.implicits._
 import com.carlos.pnia.domain.{BusinessSector, BusinessSectorError, PhoneNumber}
 import org.http4s.Method._
@@ -15,7 +15,7 @@ trait BusinessSectorRules[F[_]] {
 object BusinessSectorRules {
   def apply[F[_]](implicit ev: BusinessSectorRules[F]): BusinessSectorRules[F] = ev
 
-  def impl[F[_]: Sync](c: Client[F]): BusinessSectorRules[F] = new BusinessSectorRules[F] {
+  def impl[F[_]: Effect](c: Client[F]): BusinessSectorRules[F] = new BusinessSectorRules[F] {
     val dsl: Http4sClientDsl[F] = new Http4sClientDsl[F] {}
 
     import dsl._
@@ -26,7 +26,6 @@ object BusinessSectorRules {
         BusinessSectorError(error.getMessage)
       } // Prevent Client Json Decoding Failure Leaking
     }
-
   }
 }
 

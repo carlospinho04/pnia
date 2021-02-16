@@ -1,7 +1,6 @@
 package com.carlos.pnia.rules
 
-import cats.effect.Sync
-import cats.implicits.catsSyntaxApplicativeId
+import cats.effect.{Effect, IO}
 import com.carlos.pnia.domain.PhoneNumber
 
 import scala.annotation.tailrec
@@ -9,7 +8,7 @@ import scala.collection.immutable.HashSet
 import scala.io.Source
 
 trait PhoneNumberValidatorRules[F[_]] {
-  def hasValidPrefix(phoneNumber: PhoneNumber): F[Boolean]
+  def checkAndReturnValidPrefix(phoneNumber: PhoneNumber): F[Option[String]]
 }
 
 object PhoneNumberValidatorRules {
@@ -18,21 +17,33 @@ object PhoneNumberValidatorRules {
 
   def apply[F[_]](implicit ev: PhoneNumberValidatorRules[F]): PhoneNumberValidatorRules[F] = ev
 
-  def impl[F[_] : Sync]: PhoneNumberValidatorRules[F] = new PhoneNumberValidatorRules[F] {
+  def impl[F[_] : Effect]: PhoneNumberValidatorRules[F] = new PhoneNumberValidatorRules[F] {
 
-    override def hasValidPrefix(phoneNumber: PhoneNumber): F[Boolean] = {
-      checkValidPrefix(phoneNumber).pure[F]
+    override def checkAndReturnValidPrefix(phoneNumber: PhoneNumber): F[Option[String]] = {
+
+      Effect[F].liftIO(IO(prefixValidator(getCleanPhoneNumber(phoneNumber))))
     }
 
     @tailrec
-    private def checkValidPrefix(phoneNumber: PhoneNumber, step: Int = 1): Boolean = {
+    private def prefixValidator(phoneNumber: PhoneNumber, step: Int = 1): Option[String] = {
       phoneNumber.number.substring(0, step) match {
-        case phoneNumber.number => lines.contains(phoneNumber.number)
-        case substring if lines.contains(substring) => true
-        case _ => checkValidPrefix(phoneNumber: PhoneNumber, step + 1)
+        case phoneNumber.number if lines.contains(phoneNumber.number) => Option(phoneNumber.number)
+        case phoneNumber.number => None
+        case substring if lines.contains(substring) => Option(substring)
+        case _ => prefixValidator(phoneNumber: PhoneNumber, step + 1)
       }
     }
+
+    private def getCleanPhoneNumber(phoneNumber: PhoneNumber): PhoneNumber = {
+      val cleanPhoneNumberStr = phoneNumber.number match {
+        case s"+$number" => number
+        case s"00$number" => number
+        case numberWithoutPrefix => numberWithoutPrefix
+      }
+      PhoneNumber(cleanPhoneNumberStr)
+    }
   }
+
 }
 
 
