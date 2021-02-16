@@ -1,0 +1,10 @@
+version: '2.1' # Using 2.1 for healthcheck
+
+services:
+  web:
+    image: pnia
+    build: .
+    environment:
+      - HTTP_PORT=${SERVER_HTTP_PORT:-8080}
+    ports:
+      - "8080:8080"
