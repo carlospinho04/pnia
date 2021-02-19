@@ -24,7 +24,7 @@ object AggregatorServices {
           businessSector <- businessSector.get(phoneNumber)
           prefixOpt <- phoneNumberValidatorRules.checkAndReturnValidPrefix(phoneNumber)
         } yield {
-          prefixOpt.map(p => (businessSector, p))
+          prefixOpt.map(prefix => (businessSector, prefix))
         }
       }.map(_.flatten)
     }
