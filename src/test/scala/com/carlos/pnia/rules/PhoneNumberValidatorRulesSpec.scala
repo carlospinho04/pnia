@@ -27,5 +27,4 @@ class PhoneNumberValidatorRulesSpec extends CatsEffectSuite {
     assertIO(test, Option("3351009"))
   }
 
-
 }

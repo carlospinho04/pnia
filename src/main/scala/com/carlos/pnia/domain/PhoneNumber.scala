@@ -10,7 +10,8 @@ import org.http4s.{EntityDecoder, EntityEncoder}
 final case class PhoneNumber(number: String) extends AnyVal
 
 object PhoneNumber {
-  implicit val phoneNumberDecoder: Decoder[PhoneNumber] = (cursor: HCursor) => cursor.value.as[String].map(PhoneNumber(_))
+  implicit val phoneNumberDecoder: Decoder[PhoneNumber] = (cursor: HCursor) =>
+    cursor.value.as[String].map(PhoneNumber(_))
   implicit def phoneNumberEntityDecoder[F[_]: Sync]: EntityDecoder[F, PhoneNumber] =
     jsonOf
   implicit val phoneNumberEncoder: Encoder[PhoneNumber] = deriveEncoder[PhoneNumber]

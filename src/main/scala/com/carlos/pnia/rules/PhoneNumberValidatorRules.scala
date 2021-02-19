@@ -17,13 +17,13 @@ object PhoneNumberValidatorRules {
 
   def apply[F[_]](implicit ev: PhoneNumberValidatorRules[F]): PhoneNumberValidatorRules[F] = ev
 
-  def impl[F[_] : Effect]: PhoneNumberValidatorRules[F] = new PhoneNumberValidatorRules[F] {
+  def impl[F[_]: Effect]: PhoneNumberValidatorRules[F] = new PhoneNumberValidatorRules[F] {
 
     override def checkAndReturnValidPrefix(phoneNumber: PhoneNumber): F[Option[String]] = {
-
       Effect[F].liftIO(IO(prefixValidator(getCleanPhoneNumber(phoneNumber))))
     }
 
+    //Check if prefix is valid, if it is then it returns it
     @tailrec
     private def prefixValidator(phoneNumber: PhoneNumber, step: Int = 1): Option[String] = {
       phoneNumber.number.substring(0, step) match {
@@ -34,6 +34,7 @@ object PhoneNumberValidatorRules {
       }
     }
 
+    //Remove any + or 00 to normalize all the phone numbers
     private def getCleanPhoneNumber(phoneNumber: PhoneNumber): PhoneNumber = {
       val cleanPhoneNumberStr = phoneNumber.number match {
         case s"+$number" => number
@@ -45,5 +46,3 @@ object PhoneNumberValidatorRules {
   }
 
 }
-
-
